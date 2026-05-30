@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    CalendarDays,
+    Gavel,
+    LayoutGrid,
+    Layers,
+    Shield,
+    Trophy,
+    Users,
+    UsersRound,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -15,28 +24,70 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import { dashboard as adminDashboard } from '@/routes/admin';
+import { index as auctionIndex } from '@/routes/admin/auction';
+import { index as fixturesIndex } from '@/routes/admin/fixtures';
+import { index as playersIndex } from '@/routes/admin/players';
+import { index as poolsIndex } from '@/routes/admin/pools';
+import { index as seasonsIndex } from '@/routes/admin/seasons';
+import { index as teamsIndex } from '@/routes/admin/teams';
+import type { NavItem, UserRole } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    const role = page.props.auth.user?.role as UserRole | undefined;
+
+    if (role === 'super_admin' || role === 'admin') {
+        items.push(
+            {
+                title: 'Admin',
+                href: adminDashboard(),
+                icon: Shield,
+            },
+            {
+                title: 'Seasons',
+                href: seasonsIndex(),
+                icon: Trophy,
+            },
+            {
+                title: 'Players',
+                href: playersIndex(),
+                icon: Users,
+            },
+            {
+                title: 'Teams',
+                href: teamsIndex(),
+                icon: UsersRound,
+            },
+            {
+                title: 'Pools',
+                href: poolsIndex(),
+                icon: Layers,
+            },
+            {
+                title: 'Auction',
+                href: auctionIndex(),
+                icon: Gavel,
+            },
+            {
+                title: 'Fixtures',
+                href: fixturesIndex(),
+                icon: CalendarDays,
+            },
+        );
+    }
+
+    return items;
+});
 </script>
 
 <template>
@@ -58,7 +109,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
